@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.dzy.mapper.DazuoyeMapper">
+    <select id="selectAllStudent"
+            resultType="com.example.dzy.pojo.Dazuoye">
+        select * from dazuoye
+    </select>
+    <select id="selectStudentById" parameterType="int"
+            resultType="com.example.dzy.pojo.Dazuoye">
+        SELECT * FROM dazuoye WHERE sid = #{sid}
+    </select>
+    <insert id="addStudent" parameterType="com.example.dzy.pojo.Dazuoye">
+        insert into dazuoye(sid,sname,score)
+        values(#{sid},#{sname},#{score})
+    </insert>
+    <update id="updateStudent" parameterType="com.example.dzy.pojo.Dazuoye">
+        update dazuoye set sname = #{sname},score= #{score} where sid = #{sid}
+    </update>
+    <delete id="deleteStudent" parameterType="int">
+        delete from dazuoye where sid = #{sid}
+    </delete>
+    <select id="getStudentId" resultType="int" parameterType="int">
+        select sid from dazuoye where sid = #{sid}
+    </select>
+</mapper>

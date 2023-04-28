@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        html, body {
+            background-image: url("../static/dzy_background.png") ;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+        }
+        .list{
+
+            display: grid;
+            grid-template-columns: auto auto auto;
+            font-size: 30px;
+            row-gap: 10px;
+            grid-template-columns: 1fr 6fr 2fr 2fr 2fr;
+            border: 8px groove rgba(245, 248, 207, 0.534);
+            border-radius: 25px;
+        }
+        .list div{
+            background-color: rgba(250, 224, 153, 0.8);
+            border: 4px solid rgba(117, 96, 75, 0.8);
+            padding: 20px;
+            font-size: 30px;
+            text-align: center;
+            font-size: 20px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+        .type{
+            color: rgb(139, 56, 0);
+            border:4px solid rgb(82, 97, 59);
+            border-radius: 25px;
+        }
+        input{
+            border-radius: 8px;
+        }
+        button{
+            border-radius: 8px;
+            color: rgba(32, 31, 30, 0.733);
+            background-color: rgba(204, 150, 3, 0.63);
+        }
+        .buttonfont{
+            font-size: 20px;
+        }
+    </style>
+<!--    <meta charset="utf-8">-->
+    <title>stu</title>
+</head>
+<body>
+<div style="text-align:center;">
+    <br/><br/><br/><br/>
+    <label for="sid">
+        <h1 th:text = "#{ID}"></h1>
+    </label>
+    <input type="number" id="sid" name="sid"/>
+    <br/>
+    <label for="sname">
+        <h1 th:text = "#{NAME}"></h1>
+    </label>
+    <input type="text" id="sname" name="sname"/>
+    <br/>
+    <label for="score">
+        <h1 th:text = "#{SCORE}"></h1>
+    </label>
+    <input type="text" id="score" name="score"/>
+    <br/>
+    <input type="button" onclick="save()" value="添加信息"/>
+    <br/><br/><br/><br/>
+    <label for="search_sid">输入号码：</label>
+    <input type="number" id="search_sid" name="search_sid"/>
+    <input type="button" onclick="find()" value="查找学生">
+    <p id="find_result"><br/></p>
+</div>
+<br/>
+
+<div id="list" class="list" >
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    loadAll();
+
+
+
+
+    function save(){
+        var item = {
+            sid: $("#sid").val(),
+            sname: $("#sname").val(),
+            score: $("#score").val()
+        };
+        if (item.sid === '' || item.sname === '' || item.score === '') {
+            alert("能不能输全？");
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: "/insert/",
+            data: item,
+            success: function() {
+                loadAll();
+                alert("成了");
+            },
+            error: function() {
+                alert("没有这么多人,上限10000");
+            }
+        });
+    }
+
+
+    function find(){
+        var search_sid = $("#search_sid").val();
+
+        $.ajax({
+            method: "GET",
+            url: "/getStudent/",
+            data: { sid: search_sid },
+            success: function(result) {
+                if (result) {
+                    var find_result = document.getElementById("find_result");
+                    find_result.innerHTML = "号码为" + search_sid + "的姓名是：" + result.sname+ " 分数为：" + result.score;
+                } else {
+                    alert("你要查啥？");
+                }
+            },
+            error: function() {
+                alert("查无此人");
+            }
+        });
+    }
+    function loadAll(){
+        var list = document.getElementById("list");
+        $.ajax({
+            url: "/",
+            method:"GET",
+            dataType: "json",
+            success: function(response) {
+                if (response.length > 0) {
+                    var result = "<table>";
+                    result += '<div class="type">号码</div><div class="type">姓名</div><div class="type">分数</div><div class="type">DELETE</div><div class="type">UPDATE</div>';
+                    for (var i = 0; i < response.length; i++) {
+                        var site = response[i];
+                        result += "<div>"+site.sid+"</div><div>"+site.sname+"</div><div>"+site.score+"</div>"+"<div>"+"<button onclick=\"deleteRecord('" + site.sid + "')\">删除学生</button>"+"</div>"+"<button class=\"buttonfont\" onclick=\"update('" + site.sid  + "')\">更新</button>";
+                    }
+                    result += "</table>";
+                    list.innerHTML = result;
+                } else {
+                    list.innerHTML = "数据为空……";
+                }
+            },
+            error: function() {
+                list.innerHTML = "数据加载失败……";
+            }
+        });
+    }
+
+    function deleteRecord(sid) {
+        $.ajax({
+            method: "DELETE",
+            url: "/delete/"+sid,
+            data: { sid: sid },
+            success: function() {
+                loadAll();
+                alert('删除成功');
+            },
+            error: function() {
+                alert("删除数据出错");
+            }
+        });
+    }
+
+
+
+
+    function update(sid) {
+
+        const newName = prompt('请输入新的姓名：');
+        const newScore = prompt('请输入新的分数：');
+        const item = {
+            sid :sid,
+            sname :newName,
+            score:newScore,
+        }
+
+        const newStr = JSON.stringify(item);
+        $.ajax({
+            method: "PUT",
+            url: "/update/",
+            data: newStr,
+            contentType: 'application/json',
+            success: function() {
+                loadAll();
+                alert('修改成功');
+            },
+            error: function() {
+                alert('修改失败');
+            }
+        });
+    }
+
+</script>
+</body>
+</html>
